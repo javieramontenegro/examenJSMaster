@@ -1,0 +1,60 @@
+p {
+  margin: 0;
+  margin-bottom: 0 !important;
+}
+.container {
+  padding-top: 3rem;
+}
+
+.products {
+  justify-content: space-between;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.row > * {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.container-products {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.payment {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  height: auto;
+}
+.form {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  height: auto;
+}
+.user {
+  width: 100%;
+  height: auto;
+  display: flex;
+  justify-content: flex-end;
+}
+.cart-products {
+  width: 100%;
+  display: flex;
+  height: auto;
+}
+.cart {
+  width: 100%;
+  display: flex;
+  height: auto;
+  flex-direction: column;
+}
