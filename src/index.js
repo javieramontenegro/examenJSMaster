@@ -47,9 +47,7 @@ let nameUser;
 let stock;
 let total = 0;
 let iva;
-//let dataAdd = localStorage.getItem("newProducts");
-//let cartAdd = JSON.parse(dataAdd);
-//let inCartAdd = [...cartAdd];
+let loading = false;
 let add = [];
 let exist = false;
 let inputName = document.getElementById("name");
@@ -58,41 +56,72 @@ let btn = document.getElementById("addProduct");
 let form = document.getElementById("form");
 let cart = document.getElementById("cart");
 let user = document.getElementById("user");
+let purchaseBtn = document.getElementById("purchase");
 let userText = document.getElementById("userText");
+let pushcaseText = document.getElementById("errorTextPushcase");
 let totalContainer = document.getElementById("total");
+let modalContainer = document.getElementById("modal");
+let loadingContainer = document.getElementById("loading");
+let successContainer = document.getElementById("success");
+let cleanContainer = document.getElementById("clean");
+let cleanBtn = document.getElementById("cleanBtn");
+let closeModal;
 // MUESTRA PRODUCTOS
 function showProduct(products) {
   products.forEach((e) => {
     //localStorage.setItem("products", products);
     //verifyLogin();
-    if (sessionStorage.getItem("disabled")) {
-      disabled = "";
-    } else {
-      disabled = "disabled";
-    }
+    disabledButton();
     //localStorage.setItem("products", JSON.stringify(products));
     let productsAll = e;
 
     containerProducts.innerHTML += `
-      <div class="card" style="width: 32%;">
+      <div class="card" style="width: 24%;">
       <img src=${e.photo} class="card-img-top" alt=${e.name}>
       <div class="card-body">
       <h5 class="card-title">${e.name}</h5>
       <p class="card-text">${e.details}</p>
       <p class=""> stock : ${e.stock} </p>
-      <button class="btn btn-primary add-cart" id="${e.id}" onClick="addCart(${productsAll.id})" ${disabled}>Add to cart</button>
+      <button class="btn btn-primary add-cart" id="${e.id}" onClick="addCart(${
+      productsAll.id
+    })" ${sessionStorage.getItem("disabled")}>Add to cart</button>
       </div>
       </div>
       `;
   });
 }
 
+// DISABLED BUTTON
+function disabledButton() {
+  console.log("login", loading);
+  console.log("dis", disabled);
+  if (!login) {
+    disabled = "disabled";
+    sessionStorage.setItem("disabled", "disabled");
+  } else {
+    disabled = "";
+    sessionStorage.setItem("disabled", "false");
+  }
+}
+
+// LOADING
+function loadingCart() {
+  if (loading) {
+    loadingContainer.innerHTML = `
+<div class="wrapLoading"> 
+<h1 style="color:white"> Se está procesando su compra... </h1>
+</div>
+`;
+  } else {
+    loadingContainer.innerHTML = "";
+  }
+}
+
 // LOGIN
 function loginIn(name, password) {
   let nameUser = "yesung";
-  let passwordUser = "a";
-  //let inputName = document.getElementById("name");
-  //let inputPass = document.getElementById("password");
+  let passwordUser = "superjunior";
+
   let form = document.getElementById("form");
 
   let errorMsgName = document.getElementById("errorTextName");
@@ -133,17 +162,17 @@ function loginIn(name, password) {
 
 //LOG IN VERIFICATION
 function verificationLogIn() {
-  if (sessionStorage.getItem("login")) {
+  if (sessionStorage.getItem("login") === "true") {
     login = true;
-    if (login) {
-      form.style.display = "none";
-    }
+
+    form.style.display = "none";
   } else {
     login = false;
+    form.style.display = "flex";
+    disabled = "disabled";
   }
-
-  if (sessionStorage.getItem("disabled")) {
-    disabled = "";
+  if (sessionStorage.getItem("login") === "false") {
+    form.style.display = "flex";
   }
 }
 
@@ -156,11 +185,6 @@ function userActive(name) {
 }
 // ADD PRODUCTS SHOW
 function addProduct(products) {
-  if (sessionStorage.getItem("disabled")) {
-    disabled = "";
-  } else {
-    disabled = "disabled";
-  }
   cart.innerHTML = products
     .map(
       (e) =>
@@ -195,7 +219,8 @@ function addCart(id) {
   let data = localStorage.getItem("products");
   let cart = JSON.parse(data);
   let inCart = [...cart];
-
+  modalContainer.innerHTML = "";
+  modal();
   //info cart
 
   inCart.map((e) => {
@@ -215,38 +240,9 @@ function addCart(id) {
         //GUARDAR EN LOCAL STORAGE
         localStorage.setItem("products", JSON.stringify(inCart));
 
-        /* let dataAdd = localStorage.getItem("newProducts");
-        let cartAdd = JSON.parse(dataAdd);
-        let inCartAdd = [...cartAdd]; */
-
         if (localStorage.getItem("newProducts")) {
           sumQuantity(id, actualStock, e);
         }
-        /* inCartAdd.map((x) => {
-            console.log("new", inCartAdd);
-          
-            if (id === x.id) {
-              exist = true;
-              x.quantity = x.quantity + 1;
-              localStorage.setItem("newProducts", JSON.stringify(inCartAdd));
-              cart.innerHTML = "";
-              total = x.quantity * x.price + x.quantity * 350 + total;
-              addProduct(inCartAdd);
-              sumTotal(total);
-            }
-          });
-          
-          if (!exist) {
-            newObj = { ...e, stock: actualStock, quantity: 1 };
-            inCartAdd.push(newObj);
-            localStorage.setItem("newProducts", JSON.stringify(inCartAdd));
-            
-            total =
-              newObj.quantity * newObj.price + newObj.quantity * 350 + total;
-            addProduct(inCartAdd);
-            sumTotal(total);
-          }
-        } */
 
         console.log("old", inCart);
 
@@ -260,7 +256,7 @@ function addCart(id) {
 // TOTAL
 function sumTotal(sum) {
   iva = 350;
-
+  disabledButton();
   //total = products.quantity * products.price + products.quantity * iva;
   localStorage.setItem("total", JSON.stringify(sum));
   totalContainer.innerHTML = `
@@ -271,22 +267,29 @@ function sumTotal(sum) {
 
 
 
-<div style="width: 100%; height:100%;display:flex; justify-content: space-between; ">
+<div style="width: 100%; height:100%;display:flex; justify-content: space-between; margin-top:10px">
 <p>Total de Productos</p> <p> ${sum} </p>
 </div>
 
-<div style="width: 100%; height:100%;display:flex; justify-content: space-between; ">
+<div style="width: 100%; height:100%;display:flex; justify-content: space-between; margin-top:10px">
 <p>Total envío</p> <p> $1500 </p>
 </div>
 
-<div style="width: 100%; height:100%;display:flex; justify-content: space-between; ">
+<div style="width: 100%; height:100%;display:flex; justify-content: space-between; margin-top:10px">
 <p>Total compra</p> <p> ${
     JSON.parse(localStorage.getItem("total")) === 0 ? 0 : sum + 1500
   } </p>
 </div>
 
-<div style="width: 100%; height:100%;display:flex; justify-content: space-between; ">
-<button> Realizar pedido </button>
+<div style="width: 100%; height:100%;display:flex; justify-content: space-between; margin-top:20px">
+
+${
+  JSON.parse(localStorage.getItem("newProducts")).length !== 0
+    ? `<button class="btn btn-primary"   data-bs-toggle="modal" data-bs-target="#finish" id="purchase" onClick="modal()"${sessionStorage.getItem(
+        "disabled"
+      )} > Realizar pedido </button>`
+    : `<button class="btn btn-primary"   data-bs-toggle="modal" data-bs-target="#finish" id="purchase" disabled > Realizar pedido </button>`
+}
 </div>
 
 
@@ -299,6 +302,7 @@ function sumQuantity(id, actualStock, actualProduct) {
   let dataAdd = localStorage.getItem("newProducts");
   let cartAdd = JSON.parse(dataAdd);
   let inCartAdd = [...cartAdd];
+
   inCartAdd.map((x) => {
     console.log("new", inCartAdd);
     // SI EXISTE EL MISMO PRODUCTO EN EL CARRO
@@ -307,7 +311,8 @@ function sumQuantity(id, actualStock, actualProduct) {
       x.quantity = x.quantity + 1;
       localStorage.setItem("newProducts", JSON.stringify(inCartAdd));
       cart.innerHTML = "";
-      total = x.quantity * x.price + x.quantity * 350 + total;
+
+      total = x.price + 350 + JSON.parse(localStorage.getItem("total"));
       addProduct(inCartAdd);
       sumTotal(total);
     }
@@ -318,13 +323,65 @@ function sumQuantity(id, actualStock, actualProduct) {
     inCartAdd.push(newObj);
     localStorage.setItem("newProducts", JSON.stringify(inCartAdd));
     //cart.innerHTML = "";
-    total = newObj.quantity * newObj.price + newObj.quantity * 350 + total;
+    total = newObj.price + 350 + JSON.parse(localStorage.getItem("total"));
     addProduct(inCartAdd);
     sumTotal(total);
   }
 }
 
-function purchase() {}
+function purchase() {
+  loading = true;
+  sessionStorage.setItem("disabled", "disabled");
+  loadingCart();
+  modalContainer.innerHTML = "";
+  setTimeout(function () {
+    localStorage.setItem("newProducts", JSON.stringify([]));
+    localStorage.setItem("total", JSON.stringify(0));
+    sessionStorage.setItem("disabled", "false");
+
+    loading = false;
+    loadingCart();
+    modalSuccess();
+  }, 3000);
+  console.log("loadingg2", loading);
+}
+
+//MODAL PURCHASE
+function modal() {
+  modalContainer.innerHTML = `
+<div class="modal fade" id="finish" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">¿Desea realizar la compra?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+     
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onClick="purchase()">Comprar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+`;
+}
+
+//MODAL SUCCESSFUL PURCHASE
+function modalSuccess() {
+  successContainer.innerHTML = `
+  <div class="wrapLoading"> 
+  <div class="cardSuccess">
+      <h1 > Compra exitosa</h1>
+      <img src="https://i.ibb.co/8gpZq86/check.png"/>
+    <button class="btn btn-primary" onClick="location.reload();"> aceptar</button>
+  </div>
+  </div>
+`;
+}
 
 // SUBMIT
 function onSubmit(e) {
@@ -335,8 +392,8 @@ function onSubmit(e) {
 
 // FUNCION ACTIVDA
 window.addEventListener("load", () => {
-  //let data = localStorage.getItem("products");
-  //let cart = JSON.parse(data);
+  //modal();
+  disabledButton();
   if (JSON.parse(localStorage.getItem("products"))) {
     showProduct(JSON.parse(localStorage.getItem("products")));
   } else {
@@ -351,8 +408,10 @@ window.addEventListener("load", () => {
       JSON.stringify(JSON.parse(localStorage.getItem("newProducts")))
     );
     addProduct(JSON.parse(localStorage.getItem("newProducts")));
+    modal();
   } else {
     localStorage.setItem("newProducts", JSON.stringify(add));
+
     addProduct(add);
   }
   if (JSON.parse(localStorage.getItem("total"))) {
@@ -372,3 +431,23 @@ form.addEventListener("submit", onSubmit);
 
 verificationLogIn();
 userActive(sessionStorage.getItem("user"));
+modal();
+
+cleanBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  localStorage.setItem("products", JSON.stringify(products));
+  containerProducts.innerHTML = "";
+  showProduct(JSON.parse(localStorage.getItem("products")));
+
+  localStorage.setItem("total", JSON.stringify(0));
+  sumTotal(0);
+
+  localStorage.setItem("newProducts", JSON.stringify(add));
+  addProduct(add);
+
+  sessionStorage.setItem("user", "");
+  sessionStorage.setItem("login", false);
+  login = false;
+  verificationLogIn();
+  location.reload();
+});
