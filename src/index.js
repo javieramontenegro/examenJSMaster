@@ -66,13 +66,12 @@ let successContainer = document.getElementById("success");
 let cleanContainer = document.getElementById("clean");
 let cleanBtn = document.getElementById("cleanBtn");
 let closeModal;
-// MUESTRA PRODUCTOS
+
+// SHOW PRODUCTS
 function showProduct(products) {
   products.forEach((e) => {
-    //localStorage.setItem("products", products);
-    //verifyLogin();
     disabledButton();
-    //localStorage.setItem("products", JSON.stringify(products));
+
     let productsAll = e;
 
     containerProducts.innerHTML += `
@@ -104,7 +103,7 @@ function disabledButton() {
   }
 }
 
-// LOADING
+// LOADING MESSAGE
 function loadingCart() {
   if (loading) {
     loadingContainer.innerHTML = `
@@ -180,10 +179,11 @@ function verificationLogIn() {
 function userActive(name) {
   if (sessionStorage.getItem("user")) {
     user.style.display = "flex";
+
     userText.innerHTML = name;
   }
 }
-// ADD PRODUCTS SHOW
+// ADD NEW PRODUCTS HTML
 function addProduct(products) {
   cart.innerHTML = products
     .map(
@@ -200,10 +200,10 @@ function addProduct(products) {
 
       <div style="width:50%">
         <p>${e.name} </p>
-        <p>${e.price} </p>
+        <p>$ ${e.price} </p>
         <div style="width:100%; display:flex; height:auto; align-items:center; justify-content:space-between">
        
-        <p>${e.quantity} </p>
+        <p>x ${e.quantity} </p>
 
         </div>
       </div>
@@ -212,7 +212,7 @@ function addProduct(products) {
     .join("");
 }
 
-//ADD TO CART FUNCTION
+//CHECK STOCK AND ADD
 
 function addCart(id) {
   //info productos
@@ -253,11 +253,11 @@ function addCart(id) {
     }
   });
 }
-// TOTAL
+// TOTAL HTML
 function sumTotal(sum) {
   iva = 350;
   disabledButton();
-  //total = products.quantity * products.price + products.quantity * iva;
+
   localStorage.setItem("total", JSON.stringify(sum));
   totalContainer.innerHTML = `
 <div style="width:100%; height:100% ">
@@ -292,11 +292,12 @@ ${
 }
 </div>
 
-
 </div>
+
 
 `;
 }
+//ADD PRODUCT
 
 function sumQuantity(id, actualStock, actualProduct) {
   let dataAdd = localStorage.getItem("newProducts");
@@ -322,13 +323,13 @@ function sumQuantity(id, actualStock, actualProduct) {
     newObj = { ...actualProduct, stock: actualStock, quantity: 1 };
     inCartAdd.push(newObj);
     localStorage.setItem("newProducts", JSON.stringify(inCartAdd));
-    //cart.innerHTML = "";
+
     total = newObj.price + 350 + JSON.parse(localStorage.getItem("total"));
     addProduct(inCartAdd);
     sumTotal(total);
   }
 }
-
+// FINAL PURCHASE FUNCTION
 function purchase() {
   loading = true;
   sessionStorage.setItem("disabled", "disabled");
@@ -387,12 +388,10 @@ function modalSuccess() {
 function onSubmit(e) {
   e.preventDefault();
   loginIn(inputName.value, inputPass.value);
-  //showProduct(products);
 }
 
-// FUNCION ACTIVDA
+// ACTIVATED FUNCTION
 window.addEventListener("load", () => {
-  //modal();
   disabledButton();
   if (JSON.parse(localStorage.getItem("products"))) {
     showProduct(JSON.parse(localStorage.getItem("products")));
@@ -426,13 +425,13 @@ window.addEventListener("load", () => {
   }
 });
 
+// ACTIVATED FUNCTION
 form.addEventListener("submit", onSubmit);
-//loginIn(inputName.value, inputPass.value);
-
 verificationLogIn();
 userActive(sessionStorage.getItem("user"));
 modal();
 
+// CLEAN ALL
 cleanBtn.addEventListener("click", (e) => {
   e.preventDefault();
   localStorage.setItem("products", JSON.stringify(products));
